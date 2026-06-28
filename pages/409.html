@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Conflit — webgune</title>
+
+<style>
+  @import url("https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&display=swap");
+
+  :root{
+    /* couleurs reprises du thème sombre webgune (globals.css) */
+    --background: oklch(12.00% 0.0039 215);
+    --foreground: oklch(99.11% 0.0039 215);
+    --muted:      oklch(70.50% 0.0078 215);
+    --border:     oklch(28.00% 0.0039 215);
+    --surface:    oklch(21.03% 0.0078 215);
+    --primary:    oklch(75.50% 0.1480 210);
+    --primary-fg: oklch(13.00% 0.0260 210);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    font-family:"Bricolage Grotesque",system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+    background:var(--background);color:var(--foreground);
+    min-height:100dvh;display:flex;align-items:center;justify-content:center;
+    padding:40px 24px;overflow:hidden;-webkit-font-smoothing:antialiased;
+  }
+  /* glow statique haut-droite (repris du hero du home) */
+  .glow{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+  .glow::before,.glow::after{content:"";position:absolute;border-radius:9999px}
+  .glow::before{top:-13rem;right:-13rem;width:42rem;height:42rem;background:rgba(109,40,217,.30);filter:blur(160px)}
+  .glow::after{top:-2rem;right:8%;width:26rem;height:30rem;background:rgba(12,192,223,.16);filter:blur(120px)}
+
+  .wrap{position:relative;z-index:1;width:100%;max-width:640px;text-align:center}
+
+  /* gros code de statut, plat et discret (comme la page 404 du projet) */
+  .code{font-size:clamp(8rem,24vw,13rem);font-weight:800;line-height:.85;
+    letter-spacing:-.05em;color:var(--primary);opacity:.10;user-select:none;margin-bottom:-2rem}
+
+  .topbar{position:fixed;top:26px;left:34px;z-index:2;display:inline-flex;align-items:center;gap:.7rem}
+  .topbar .mark{width:58px;height:auto}
+  .topbar .word{font-size:1.75rem;font-weight:700;letter-spacing:-.02em}
+
+  h1{font-size:clamp(1.9rem,5.5vw,3rem);font-weight:800;letter-spacing:-.03em;
+    line-height:1.08;margin-bottom:.9rem}
+  .lead{color:var(--muted);font-size:1.02rem;line-height:1.6;max-width:34rem;margin:0 auto 2rem}
+  .lead b{color:var(--foreground);font-weight:600}
+
+  .cases{display:grid;gap:.7rem;text-align:left;margin:0 auto 2rem;max-width:34rem}
+  .case{display:flex;gap:.85rem;align-items:flex-start;padding:1rem 1.1rem;
+    border-radius:14px;border:1px solid var(--border);background:var(--surface)}
+  .case .ic{flex:0 0 auto;width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+    background:color-mix(in oklch,var(--primary) 14%,transparent);color:var(--primary)}
+  .case .ic svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8}
+  .case h3{font-size:.95rem;font-weight:600;margin-bottom:.2rem}
+  .case p{font-size:.86rem;color:var(--muted);line-height:1.5}
+  /* cas mis en avant par le JS (selon IP vs domaine) */
+  .case.is-active{border-color:color-mix(in oklch,var(--primary) 50%,var(--border));
+    background:color-mix(in oklch,var(--primary) 8%,var(--surface))}
+  .case.is-dim{opacity:.45}
+  .js-host{font-family:ui-monospace,"JetBrains Mono",monospace;font-size:.92em;
+    color:var(--primary);background:color-mix(in oklch,var(--primary) 12%,transparent);
+    padding:.06em .42em;border-radius:6px;word-break:break-all}
+
+  .actions{display:flex;gap:.7rem;justify-content:center;flex-wrap:wrap}
+  .btn{display:inline-flex;align-items:center;gap:.5rem;height:44px;padding:0 1.4rem;
+    border-radius:12px;font-size:.92rem;font-weight:600;text-decoration:none;cursor:pointer;
+    border:1px solid transparent;transition:opacity .15s ease,background .15s ease}
+  .btn-primary{background:var(--primary);color:var(--primary-fg)}
+  .btn-primary:hover{opacity:.9}
+  .btn-ghost{background:transparent;color:var(--foreground);border-color:var(--border)}
+  .btn-ghost:hover{background:color-mix(in oklch,var(--muted) 14%,transparent)}
+  .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.9}
+
+  .foot{position:fixed;left:0;right:0;bottom:0;z-index:1;display:flex;
+    align-items:center;justify-content:center;gap:.6rem;padding:18px;font-size:.74rem;color:var(--muted)}
+  .foot .sep{width:3px;height:3px;border-radius:50%;background:var(--muted)}
+  .foot a{color:var(--muted);text-decoration:none}
+  .foot a:hover{color:var(--primary)}
+
+  @media (max-width:480px){
+    .code{font-size:7rem;margin-bottom:-1.4rem}
+    .actions{flex-direction:column}.btn{justify-content:center;width:100%}
+  }
+</style>
+</head>
+<body>
+  <div class="glow"></div>
+
+  <header class="topbar">
+      <svg class="mark" viewBox="0 0 553 321" role="img" aria-label="webgune">
+        <path fill="var(--primary)" d="M329.811 6.41016C336.074 -1.61668 348.276 -1.44222 354.279 6.77637V6.77734L546.372 270.271H546.373C561.598 291.119 546.701 320.434 520.864 320.456H17.1875C3.61711 320.456 -4.25749 305.072 3.66016 294.069L152.195 87.5312L152.196 87.5322C158.665 78.5849 171.966 78.5427 178.477 87.4238L267.034 208.227V208.226C274.363 218.252 289.237 218.365 296.736 208.606L297.088 208.135L341.044 147.267H341.045C347.109 138.85 359.303 137.878 366.642 145.217L366.643 145.218C369.922 148.476 371.606 152.814 371.606 157.175C371.606 160.602 370.528 164.055 368.39 167.037L303.077 257.483C294.638 269.17 302.986 285.499 317.416 285.499H478.864C493.317 285.499 501.665 269.102 493.18 257.438H493.179L352.199 63.501C346.846 56.0957 335.867 55.9599 330.287 63.2002L330.286 63.2012L280.886 127.559C274.314 136.119 261.755 136.94 254.124 129.31L254.123 129.308L253.802 128.98C250.534 125.563 248.87 121.124 248.87 116.662C248.87 112.838 250.123 108.99 252.632 105.745L329.812 6.41113L329.811 6.41016ZM179.53 143.393C173.51 135.051 161.123 134.982 155.011 143.277L70.4307 258.058V258.059C62.0553 269.455 70.1782 285.566 84.3447 285.566H108.123C116.59 285.566 124.581 281.627 129.742 274.903L169.365 223.325C174.481 216.677 183.783 214.692 191.273 219.053V219.052C199.909 224.092 201.94 235.529 196.16 243.755L188.916 254.044L188.915 254.045C182.349 263.418 182.462 275.938 189.207 285.178V285.179L189.317 285.334L189.468 285.544H234.037C237.644 285.544 241.016 283.798 243.131 280.87L243.133 280.868L256.109 262.734L256.11 262.735C258.902 258.85 258.902 253.592 256.108 249.728L179.53 143.393Z"/>
+      </svg>
+      <span class="word">webgune</span>
+  </header>
+
+  <main class="wrap">
+    <div class="code" aria-hidden="true">409</div>
+
+    <h1 id="wg-h1">Deux versions s'écharpent. On ne sait qui croire.</h1>
+    <p class="lead">La requête entre en conflit avec l'état actuel de la ressource.</p>
+
+    <div class="actions"><a class="btn btn-primary" href="https://webgune.cloud"><svg viewBox="0 0 24 24"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg> Retour à l'accueil</a>
+      <a class="btn btn-ghost" href="https://status.webgune.cloud"><svg viewBox="0 0 24 24"><path d="M3 12h4l2 6 4-14 2 8h6"/></svg> État des services</a></div>
+  </main>
+
+  <footer class="foot">
+    <span>webgune</span>
+    <span class="sep"></span>
+    <span>HTTP 409</span>
+    <span class="sep"></span>
+    <a href="https://status.webgune.cloud">État des services</a>
+  </footer>
+
+  <!-- 10 punchlines par type de page : on en tire une au hasard à chaque visite -->
+  <script>window.WG_LINES=["Deux versions s'écharpent. On ne sait qui croire.","409 : conflit, comme un repas de famille.","Ça se bouscule au portillon des données.","Quelqu'un a touché à ça avant vous.","Vos modifications se marchent dessus.","Conflit détecté. Mettez-vous d'accord.","Deux mains sur le même volant. Mauvaise idée.","L'état actuel n'est pas d'accord avec vous.","On a un désaccord. Réglez ça gentiment.","Collision de données. Aïe."];</script>
+  <script>
+    (function () {
+      var l = window.WG_LINES, h = document.getElementById("wg-h1");
+      if (l && l.length && h) h.textContent = l[Math.floor(Math.random() * l.length)];
+    })();
+  </script>
+
+  <!-- Détection IP vs domaine (n'agit que sur la page catch-all / 404) -->
+  <script>
+    (function () {
+      var host = location.hostname || "";
+      var spans = document.querySelectorAll(".js-host");
+      if (!spans.length) return;
+      for (var i = 0; i < spans.length; i++) spans[i].textContent = host || "cette adresse";
+      var isIP =
+        /^(\d{1,3}\.){3}\d{1,3}$/.test(host) ||  // IPv4
+        host.indexOf(":") > -1 ||                // IPv6
+        host === "localhost";
+      var ip = document.getElementById("case-ip");
+      var dom = document.getElementById("case-domain");
+      if (isIP) {
+        if (ip) ip.classList.add("is-active");
+        if (dom) dom.classList.add("is-dim");
+      } else {
+        if (dom) dom.classList.add("is-active");
+        if (ip) ip.classList.add("is-dim");
+      }
+    })();
+  </script>
+</body>
+</html>

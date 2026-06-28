@@ -1,0 +1,48 @@
+# Variante "provider fichier" (si vous ne passez pas par les labels Docker).
+# Chargez ce fichier via, par ex. :
+#   providers.file.filename = /etc/traefik/dynamic.yml
+#
+# Il suppose qu'un service nginx sert le dossier ./pages (voir docker-compose.yml ou nginx.conf).
+http:
+  middlewares:
+    webgune-errors:
+      errors:
+        # Toutes les erreurs HTTP -> nos pages.
+        # ⚠ Pour des routeurs d'API, restreignez (ex: "404", "500-504") afin de ne
+        #   pas remplacer les réponses 401/403/429 ou les corps JSON par du HTML.
+        status:
+          - "400-599"
+        service: webgune-error-pages
+        query: "/{status}.html"
+
+  services:
+    webgune-error-pages:
+      loadBalancer:
+        servers:
+          # Adresse du serveur nginx qui sert le dossier ./pages
+          - url: "http://error-pages:80"
+
+  routers:
+    # Accès direct par IP ou domaine non configuré -> page "Domaine non configuré"
+    webgune-catchall:
+      rule: "PathPrefix(`/`)"
+      priority: 1
+      entryPoints:
+        - web
+        - websecure
+      service: webgune-error-pages
+      # tls: {}   # décommentez pour servir le catch-all en HTTPS (certificat par défaut)
+
+# ── Comment appliquer le middleware d'erreurs à VOS sites ? ──
+# Ajoutez "webgune-errors" à la liste des middlewares de chaque routeur applicatif :
+#
+#   http.routers.mon-site.middlewares:
+#     - webgune-errors
+#
+# Ou attachez-le globalement sur l'entrypoint dans la config statique de Traefik :
+#
+#   entryPoints:
+#     websecure:
+#       http:
+#         middlewares:
+#           - webgune-errors@file
